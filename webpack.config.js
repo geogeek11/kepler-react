@@ -25,6 +25,7 @@
 const resolve = require("path").resolve;
 const join = require("path").join;
 const webpack = require("webpack");
+const dotenv = require("dotenv");
 
 const CONFIG = {
   // bundle app.js and everything it imports, recursively.
@@ -60,7 +61,10 @@ const CONFIG = {
   },
 
   // Optional: Enables reading mapbox and dropbox client token from environment variable
-  plugins: [new webpack.EnvironmentPlugin(["MapboxAccessToken"])],
+  plugins: [new webpack.EnvironmentPlugin(["MapboxAccessToken"]),
+  new webpack.DefinePlugin({
+    'process.env': JSON.stringify(dotenv.config().parsed)
+  })]
 };
 
 module.exports = () => CONFIG;
