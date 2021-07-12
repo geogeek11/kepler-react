@@ -18,13 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import {combineReducers} from 'redux';
-import {handleActions} from 'redux-actions';
+import { combineReducers } from 'redux';
+import { handleActions } from 'redux-actions';
 
-import keplerGlReducer, {combinedUpdaters, uiStateUpdaters} from 'kepler.gl/reducers';
-import {processGeojson, processCsvData} from 'kepler.gl/processors';
+import keplerGlReducer, { combinedUpdaters, uiStateUpdaters } from 'kepler.gl/reducers';
+import { processGeojson, processCsvData } from 'kepler.gl/processors';
 import KeplerGlSchema from 'kepler.gl/schemas';
-import {EXPORT_MAP_FORMATS} from 'kepler.gl/constants';
+import { EXPORT_MAP_FORMATS } from 'kepler.gl/constants';
 
 import {
   INIT,
@@ -34,10 +34,10 @@ import {
   SET_SAMPLE_LOADING_STATUS
 } from '../actions';
 
-import {AUTH_TOKENS, DEFAULT_FEATURE_FLAGS} from '../constants/default-settings';
-import {generateHashId} from '../utils/strings';
+import { AUTH_TOKENS, DEFAULT_FEATURE_FLAGS } from '../constants/default-settings';
+import { generateHashId } from '../utils/strings';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import {point, polygon} from '@turf/helpers';
+import { point, polygon } from '@turf/helpers';
 // INITIAL_APP_STATE
 const initialAppState = {
   appName: 'example',
@@ -45,7 +45,7 @@ const initialAppState = {
   sampleMaps: [], // this is used to store sample maps fetch from a remote json file
   isMapLoading: false, // determine whether we are loading a sample map,
   error: null, // contains error when loading/retrieving data/configuration
-  filteredByPolygon:null, //contains the points inside the selected polygon
+  filteredByPolygon: null, //contains the points inside the selected polygon
   // {
   //   status: null,
   //   message: null
@@ -73,7 +73,7 @@ export const appReducer = handleActions(
   initialAppState
 );
 
-const {DEFAULT_EXPORT_MAP} = uiStateUpdaters;
+const { DEFAULT_EXPORT_MAP } = uiStateUpdaters;
 
 // combine app reducer and keplerGl reducer
 // to mimic the reducer state of kepler.gl website
@@ -110,7 +110,7 @@ const demoReducer = combineReducers({
 export const loadRemoteResourceSuccess = (state, action) => {
   // TODO: replace generate with a different function
   const datasetId = action.options.id || generateHashId(6);
-  const {dataUrl} = action.options;
+  const { dataUrl } = action.options;
   let processorMethod = processCsvData;
   // TODO: create helper to determine file ext eligibility
   if (dataUrl.includes('.json') || dataUrl.includes('.geojson')) {
@@ -154,7 +154,7 @@ export const loadRemoteResourceSuccess = (state, action) => {
 };
 
 export const loadRemoteResourceError = (state, action) => {
-  const {error, url} = action;
+  const { error, url } = action;
 
   const errorNote = {
     type: 'error',
@@ -181,26 +181,30 @@ export const loadRemoteResourceError = (state, action) => {
 
 //Filter the 1st dataset points by the selected polygon then store the result in filteredByPolygon
 export const filterByPolygon = (state, action) => {
- 
+
   const datasets = state.keplerGl.map.visState.datasets;
   //if no dataset is loaded or no polygon is selected, reset the filteredByPolygon to null
-  if((datasets && Object.keys(datasets).length === 0 && datasets.constructor === Object) || action.payload.feature==undefined)
-  return { ...state,
-    app: {
-      ...state.app,
-      filteredByPolygon: null
-    } };
+  if ((datasets && Object.keys(datasets).length === 0 && datasets.constructor === Object) || action.payload.feature == undefined)
+    return {
+      ...state,
+      app: {
+        ...state.app,
+        filteredByPolygon: null
+      }
+    };
 
   //get the first dataset
   const datasetId = Object.keys(datasets)[0];
 
-  return { ...state,
+  return {
+    ...state,
     app: {
       ...state.app,
       filteredByPolygon: datasets[datasetId].allData
-                       .map((row,i) => [i, row[5], row[2],row[11]]) //selected only the columns to show with an extra index, then check if the point inside the polygon
-                       .filter(row => row[2]!==null && row[3]!==null &&   booleanPointInPolygon(point([row[2],row[3]]), polygon(action.payload.feature.geometry.coordinates)))
-    } };
+        .map((row, i) => [i, row[5], row[2], row[11]]) //selected only the columns to show with an extra index, then check if the point inside the polygon
+        .filter(row => row[2] !== null && row[3] !== null && booleanPointInPolygon(point([row[2], row[3]]), polygon(action.payload.feature.geometry.coordinates)))
+    }
+  };
 };
 
 const composedUpdaters = {
@@ -212,10 +216,10 @@ const composedReducer = (state, action) => {
   if (composedUpdaters[action.type]) {
     return composedUpdaters[action.type](state, action);
   }
-  
-  if(action.type=="@@kepler.gl/SET_SELECTED_FEATURE"){
-   state = filterByPolygon(state, action); 
-   //replace the current state and pass it to demoreducer to apply the original SET_SELECTED_FEATURE action.
+
+  if (action.type == "@@kepler.gl/SET_SELECTED_FEATURE") {
+    state = filterByPolygon(state, action);
+    //replace the current state and pass it to demoreducer to apply the original SET_SELECTED_FEATURE action.
   }
   return demoReducer(state, action);
 };

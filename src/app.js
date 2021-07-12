@@ -18,20 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
-import styled, {ThemeProvider} from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import window from 'global/window';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {theme} from 'kepler.gl/styles';
+import { theme } from 'kepler.gl/styles';
 import Banner from './components/banner';
-import Announcement, {FormLink} from './components/announcement';
-import {replaceLoadDataModal} from './factories/load-data-modal';
-import {replaceMapControl} from './factories/map-control';
-import {replacePanelHeader} from './factories/panel-header';
-import {AUTH_TOKENS} from './constants/default-settings';
-import {messages} from './constants/localization';
+import Announcement, { FormLink } from './components/announcement';
+import { replaceLoadDataModal } from './factories/load-data-modal';
+import { replaceMapControl } from './factories/map-control';
+import { replacePanelHeader } from './factories/panel-header';
+import { AUTH_TOKENS } from './constants/default-settings';
+import { messages } from './constants/localization';
 
 import {
   loadRemoteMap,
@@ -40,8 +40,8 @@ import {
   onLoadCloudMapSuccess
 } from './actions';
 
-import {loadCloudMap} from 'kepler.gl/actions';
-import {CLOUD_PROVIDERS} from './cloud-providers';
+import { loadCloudMap } from 'kepler.gl/actions';
+import { CLOUD_PROVIDERS } from './cloud-providers';
 
 const KeplerGl = require('kepler.gl/components').injectComponents([
   replaceLoadDataModal(),
@@ -51,16 +51,16 @@ const KeplerGl = require('kepler.gl/components').injectComponents([
 
 // Sample data
 /* eslint-disable no-unused-vars */
-import sampleTripData, {testCsvData, sampleTripDataConfig} from './data/sample-trip-data';
+import sampleTripData, { testCsvData, sampleTripDataConfig } from './data/sample-trip-data';
 import sampleGeojson from './data/sample-small-geojson';
 import sampleGeojsonPoints from './data/sample-geojson-points';
 import sampleGeojsonConfig from './data/sample-geojson-config';
-import sampleH3Data, {config as h3MapConfig} from './data/sample-hex-id-csv';
-import sampleS2Data, {config as s2MapConfig, dataId as s2DataId} from './data/sample-s2-data';
+import sampleH3Data, { config as h3MapConfig } from './data/sample-hex-id-csv';
+import sampleS2Data, { config as s2MapConfig, dataId as s2DataId } from './data/sample-s2-data';
 import sampleAnimateTrip from './data/sample-animate-trip-data';
-import sampleIconCsv, {config as savedMapConfig} from './data/sample-icon-csv';
-import {addDataToMap, addNotification} from 'kepler.gl/actions';
-import {processCsvData, processGeojson} from 'kepler.gl/processors';
+import sampleIconCsv, { config as savedMapConfig } from './data/sample-icon-csv';
+import { addDataToMap, addNotification } from 'kepler.gl/actions';
+import { processCsvData, processGeojson } from 'kepler.gl/processors';
 import Datatable from './datatable';
 /* eslint-enable no-unused-vars */
 
@@ -107,7 +107,7 @@ class App extends Component {
   componentDidMount() {
     // if we pass an id as part of the url
     // we ry to fetch along map configurations
-    const {params: {id, provider} = {}, location: {query = {}} = {}} = this.props;
+    const { params: { id, provider } = {}, location: { query = {} } = {} } = this.props;
 
     const cloudProvider = CLOUD_PROVIDERS.find(c => c.name === provider);
     if (cloudProvider) {
@@ -129,7 +129,7 @@ class App extends Component {
     // Load map using a custom
     if (query.mapUrl) {
       // TODO?: validate map url
-      this.props.dispatch(loadRemoteMap({dataUrl: query.mapUrl}));
+      this.props.dispatch(loadRemoteMap({ dataUrl: query.mapUrl }));
     }
 
     // delay zs to show the banner
@@ -144,11 +144,11 @@ class App extends Component {
   }
 
   _showBanner = () => {
-    this.setState({showBanner: true});
+    this.setState({ showBanner: true });
   };
 
   _hideBanner = () => {
-    this.setState({showBanner: false});
+    this.setState({ showBanner: false });
   };
 
   _disableBanner = () => {
@@ -158,10 +158,10 @@ class App extends Component {
 
   _loadMockNotifications = () => {
     const notifications = [
-      [{message: 'Welcome to Kepler.gl'}, 3000],
-      [{message: 'Something is wrong', type: 'error'}, 1000],
-      [{message: 'I am getting better', type: 'warning'}, 1000],
-      [{message: 'Everything is fine', type: 'success'}, 1000]
+      [{ message: 'Welcome to Kepler.gl' }, 3000],
+      [{ message: 'Something is wrong', type: 'error' }, 1000],
+      [{ message: 'I am getting better', type: 'warning' }, 1000],
+      [{ message: 'Everything is fine', type: 'success' }, 1000]
     ];
 
     this._addNotifications(notifications);
@@ -263,7 +263,7 @@ class App extends Component {
       addDataToMap({
         datasets: [
           {
-            info: {label: 'Trip animation'},
+            info: { label: 'Trip animation' },
             data: processGeojson(sampleAnimateTrip)
           }
         ]
@@ -277,11 +277,11 @@ class App extends Component {
       addDataToMap({
         datasets: [
           {
-            info: {label: 'Bart Stops Geo', id: 'bart-stops-geo'},
+            info: { label: 'Bart Stops Geo', id: 'bart-stops-geo' },
             data: processGeojson(sampleGeojsonPoints)
           },
           {
-            info: {label: 'SF Zip Geo', id: 'sf-zip-geo'},
+            info: { label: 'SF Zip Geo', id: 'sf-zip-geo' },
             data: processGeojson(sampleGeojson)
           }
         ],
@@ -388,7 +388,7 @@ class App extends Component {
             }}
           >
             <AutoSizer>
-              {({height, width}) => (
+              {({ height, width }) => (
                 <KeplerGl
                   mapboxApiAccessToken={AUTH_TOKENS.MAPBOX_TOKEN}
                   id="map"
@@ -405,7 +405,7 @@ class App extends Component {
                 />
               )}
             </AutoSizer>
-            <Datatable/>
+            <Datatable />
           </div>
         </GlobalStyle>
       </ThemeProvider>
@@ -414,6 +414,6 @@ class App extends Component {
 }
 
 const mapStateToProps = state => state;
-const dispatchToProps = dispatch => ({dispatch});
+const dispatchToProps = dispatch => ({ dispatch });
 
 export default connect(mapStateToProps, dispatchToProps)(App);
