@@ -36,7 +36,8 @@ import {
 
 import {AUTH_TOKENS, DEFAULT_FEATURE_FLAGS} from '../constants/default-settings';
 import {generateHashId} from '../utils/strings';
-
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import {point, polygon} from '@turf/helpers';
 // INITIAL_APP_STATE
 const initialAppState = {
   appName: 'example',
@@ -44,6 +45,7 @@ const initialAppState = {
   sampleMaps: [], // this is used to store sample maps fetch from a remote json file
   isMapLoading: false, // determine whether we are loading a sample map,
   error: null, // contains error when loading/retrieving data/configuration
+  filteredByPolygon:null, //contains the points inside the selected polygon
   // {
   //   status: null,
   //   message: null
@@ -177,6 +179,30 @@ export const loadRemoteResourceError = (state, action) => {
   };
 };
 
+//Filter the 1st dataset points by the selected polygon then store the result in filteredByPolygon
+export const filterByPolygon = (state, action) => {
+ 
+  const datasets = state.keplerGl.map.visState.datasets;
+  //if no dataset is loaded or no polygon is selected, reset the filteredByPolygon to null
+  if((datasets && Object.keys(datasets).length === 0 && datasets.constructor === Object) || action.payload.feature==undefined)
+  return { ...state,
+    app: {
+      ...state.app,
+      filteredByPolygon: null
+    } };
+
+  //get the first dataset
+  const datasetId = Object.keys(datasets)[0];
+
+  return { ...state,
+    app: {
+      ...state.app,
+      filteredByPolygon: datasets[datasetId].allData
+                       .map((row,i) => [i, row[5], row[2],row[11]]) //selected only the columns to show with an extra index, then check if the point inside the polygon
+                       .filter(row => row[2]!==null && row[3]!==null &&   booleanPointInPolygon(point([row[2],row[3]]), polygon(action.payload.feature.geometry.coordinates)))
+    } };
+};
+
 const composedUpdaters = {
   [LOAD_REMOTE_RESOURCE_SUCCESS]: loadRemoteResourceSuccess,
   [LOAD_REMOTE_RESOURCE_ERROR]: loadRemoteResourceError
@@ -185,6 +211,11 @@ const composedUpdaters = {
 const composedReducer = (state, action) => {
   if (composedUpdaters[action.type]) {
     return composedUpdaters[action.type](state, action);
+  }
+  
+  if(action.type=="@@kepler.gl/SET_SELECTED_FEATURE"){
+   state = filterByPolygon(state, action); 
+   //replace the current state and pass it to demoreducer to apply the original SET_SELECTED_FEATURE action.
   }
   return demoReducer(state, action);
 };

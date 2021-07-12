@@ -61,6 +61,7 @@ import sampleAnimateTrip from './data/sample-animate-trip-data';
 import sampleIconCsv, {config as savedMapConfig} from './data/sample-icon-csv';
 import {addDataToMap, addNotification} from 'kepler.gl/actions';
 import {processCsvData, processGeojson} from 'kepler.gl/processors';
+import Datatable from './datatable';
 /* eslint-enable no-unused-vars */
 
 const BannerHeight = 48;
@@ -404,6 +405,7 @@ class App extends Component {
                 />
               )}
             </AutoSizer>
+            <Datatable/>
           </div>
         </GlobalStyle>
       </ThemeProvider>
