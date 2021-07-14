@@ -38,6 +38,7 @@ import { AUTH_TOKENS, DEFAULT_FEATURE_FLAGS } from '../constants/default-setting
 import { generateHashId } from '../utils/strings';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import { point, polygon } from '@turf/helpers';
+import _ from "lodash";
 // INITIAL_APP_STATE
 const initialAppState = {
   appName: 'example',
@@ -196,13 +197,43 @@ export const filterByPolygon = (state, action) => {
   //get the first dataset
   const datasetId = Object.keys(datasets)[0];
 
+  const lonIndex = 2, latIndex = 11;
+  const result = state.keplerGl.map.visState.datasets[datasetId].allData
+    .filter(row => row[lonIndex] !== null && row[latIndex] !== null && booleanPointInPolygon(point([row[lonIndex], row[latIndex]]), polygon(action.payload.feature.geometry.coordinates)));
+  const indexes = [...Array(result.length).keys()];
+
+  //To display the points inside the polygon as a kepler dataset spread operator was enough
+  //but filtering was not functional, as it requires the function filterTable() which is not copied using the spread operator
+  //So i needed to deepcopy the dataset to copy the functions.  
   return {
     ...state,
-    app: {
-      ...state.app,
-      filteredByPolygon: datasets[datasetId].allData
-        .map((row, i) => [i, row[5], row[2], row[11]]) //selected only the columns to show with an extra index, then check if the point inside the polygon
-        .filter(row => row[2] !== null && row[3] !== null && booleanPointInPolygon(point([row[2], row[3]]), polygon(action.payload.feature.geometry.coordinates)))
+    keplerGl: {
+      ...state.keplerGl,
+      map: {
+        ...state.keplerGl.map,
+        visState: {
+          ...state.keplerGl.map.visState,
+          datasets: {
+            ...state.keplerGl.map.visState.datasets,
+            filteredByPolygon:
+              Object.assign(_.cloneDeep(state.keplerGl.map.visState.datasets[datasetId]),
+                {
+                  ...state.keplerGl.map.visState.datasets[datasetId],
+                  id: "filteredByPolygon",
+                  label: "filteredByPolygon",
+                  metadata: {
+                    ...state.keplerGl.map.visState.datasets[datasetId].metadata,
+                    id: "filteredByPolygon",
+                    label: "filteredByPolygon"
+                  },
+                  allData: result,
+                  allIndexes: indexes,
+                  filteredIndex: indexes,
+                  filteredIndexForDomain: indexes
+                })
+          }
+        }
+      }
     }
   };
 };
